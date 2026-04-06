@@ -1,12 +1,15 @@
 const dotenv = require('dotenv');
 const app = require('./app');
 const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
 
 // Load environment variables
 dotenv.config();
 
 // Connect to MongoDB
 connectDB();
+
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
 

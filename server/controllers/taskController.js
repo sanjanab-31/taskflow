@@ -1,44 +1,29 @@
 const Task = require('../models/Task');
 
 /**
- * @desc    Get all tasks (optionally filter by projectId)
+ * @desc    Get tasks by project
  * @route   GET /api/tasks?projectId=xxx
  * @access  Private
  */
-const getTasks = async (req, res) => {
+const getTasksByProject = async (req, res) => {
     try {
-        const filter = {};
-        if (req.query.projectId) {
-            filter.project = req.query.projectId;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
         }
-        const tasks = await Task.find(filter)
+
+        const projectId = req.query.projectId || req.params.projectId;
+        if (!projectId) {
+            return res.status(400).json({ message: 'projectId is required' });
+        }
+
+        const tasks = await Task.find({ projectId })
             .populate('assignedTo', 'name email')
-            .populate('project', 'name')
+            .populate('projectId', 'name')
             .sort({ createdAt: -1 });
+
         res.json(tasks);
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * @desc    Get single task by ID
- * @route   GET /api/tasks/:id
- * @access  Private
- */
-const getTaskById = async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id)
-            .populate('assignedTo', 'name email')
-            .populate('project', 'name');
-
-        if (task) {
-            res.json(task);
-        } else {
-            res.status(404).json({ message: 'Task not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -49,26 +34,29 @@ const getTaskById = async (req, res) => {
  */
 const createTask = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const { title, description, status, priority, deadline, assignedTo, projectId } = req.body;
 
-        if (!title) {
-            return res.status(400).json({ message: 'Task title is required' });
+        if (!title || !projectId) {
+            return res.status(400).json({ message: 'Task title and projectId are required' });
         }
 
         const task = await Task.create({
-            project: projectId,
-            user: req.user?._id || null,
             title,
             description: description || '',
-            status: status || 'To Do',
-            priority: priority || 'Medium',
+            status: status || 'todo',
+            priority: priority || 'medium',
             deadline: deadline || null,
             assignedTo: assignedTo || null,
+            projectId,
         });
 
         res.status(201).json(task);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -79,6 +67,10 @@ const createTask = async (req, res) => {
  */
 const updateTask = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const task = await Task.findById(req.params.id);
 
         if (!task) {
@@ -97,7 +89,7 @@ const updateTask = async (req, res) => {
         const updatedTask = await task.save();
         res.json(updatedTask);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -108,6 +100,10 @@ const updateTask = async (req, res) => {
  */
 const deleteTask = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const task = await Task.findById(req.params.id);
 
         if (!task) {
@@ -117,14 +113,13 @@ const deleteTask = async (req, res) => {
         await Task.deleteOne({ _id: req.params.id });
         res.json({ message: 'Task removed' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
 module.exports = {
-    getTasks,
-    getTaskById,
     createTask,
+    getTasksByProject,
     updateTask,
     deleteTask,
 };

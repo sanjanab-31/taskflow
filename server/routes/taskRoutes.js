@@ -1,8 +1,7 @@
 const express = require('express');
 const {
-    getTasks,
-    getTaskById,
     createTask,
+    getTasksByProject,
     updateTask,
     deleteTask,
 } = require('../controllers/taskController');
@@ -12,12 +11,11 @@ const router = express.Router();
 
 router.use(protect); // Protect all task routes
 
-router.route('/')
-    .get(getTasks)
-    .post(createTask);
+router.post('/', createTask);
+
+router.get('/:projectId', getTasksByProject);
 
 router.route('/:id')
-    .get(getTaskById)
     .put(updateTask)
     .delete(deleteTask);
 

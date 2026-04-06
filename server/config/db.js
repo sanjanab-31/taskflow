@@ -1,17 +1,11 @@
 const mongoose = require('mongoose');
 
-/**
- * Connect to MongoDB
- * This function should be called in server.js to establish connection.
- */
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI, {
-            // Options can be added here
-        });
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log(`MongoDB connection successful: ${conn.connection.host}`);
     } catch (error) {
-        console.error(`Error: ${error.message}`);
+        console.error(`MongoDB connection failed: ${error.message}`);
         process.exit(1);
     }
 };

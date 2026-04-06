@@ -82,7 +82,7 @@ export default function Sidenav() {
           </div>
         </Link>
         <button 
-          onClick={() => navigate('/signup')} 
+          onClick={() => navigate('/login')} 
           className="mt-4 w-full flex items-center gap-3 px-4 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer border border-red-500/20"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">

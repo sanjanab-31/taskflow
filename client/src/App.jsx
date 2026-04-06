@@ -6,10 +6,11 @@ import Projects from './pages/Projects';
 import Team from './pages/Team';
 import UserProfile from './pages/UserProfile';
 import Signup from './pages/Signup';
+import Login from './pages/Login';
 
 function AppContent() {
   const location = useLocation();
-  const hideSidebarRoutes = ['/signup'];
+  const hideSidebarRoutes = ['/signup', '/login'];
   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   return (
@@ -23,6 +24,7 @@ function AppContent() {
           <Route path="/team" element={<Team />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </main>
     </div>

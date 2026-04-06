@@ -40,6 +40,7 @@ export default function Login() {
       }
 
       // Login successful
+      localStorage.setItem('taskflow_isLoggedIn', 'true');
       setIsSubmitting(false);
       navigate('/');
     }, 1000);

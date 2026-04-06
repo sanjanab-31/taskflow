@@ -1,13 +1,18 @@
 const Project = require('../models/Project');
+const Task = require('../models/Task');
 
 /**
- * @desc    Get all user projects
+ * @desc    Get all projects
  * @route   GET /api/projects
  * @access  Private
  */
 const getProjects = async (req, res) => {
-    // Implement get projects logic here
-    res.status(200).json({ message: 'Get projects endpoint' });
+    try {
+        const projects = await Project.find({}).populate('team', 'name email isAdmin').sort({ createdAt: -1 });
+        res.json(projects);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /**
@@ -16,8 +21,26 @@ const getProjects = async (req, res) => {
  * @access  Private
  */
 const createProject = async (req, res) => {
-    // Implement create project logic here
-    res.status(201).json({ message: 'Create project endpoint' });
+    try {
+        const { name, description, deadline, status, team } = req.body;
+
+        if (!name || !description) {
+            return res.status(400).json({ message: 'Name and description are required' });
+        }
+
+        const project = await Project.create({
+            user: req.user?._id || null,
+            name,
+            description,
+            deadline: deadline || null,
+            status: status || 'Not Started',
+            team: team || [],
+        });
+
+        res.status(201).json(project);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /**
@@ -26,8 +49,17 @@ const createProject = async (req, res) => {
  * @access  Private
  */
 const getProjectById = async (req, res) => {
-    // Implement get single project logic here
-    res.status(200).json({ message: 'Get project by ID endpoint' });
+    try {
+        const project = await Project.findById(req.params.id).populate('team', 'name email isAdmin');
+
+        if (project) {
+            res.json(project);
+        } else {
+            res.status(404).json({ message: 'Project not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /**
@@ -36,8 +68,26 @@ const getProjectById = async (req, res) => {
  * @access  Private
  */
 const updateProject = async (req, res) => {
-    // Implement update project logic here
-    res.status(200).json({ message: 'Update project endpoint' });
+    try {
+        const project = await Project.findById(req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        const { name, description, deadline, status, team } = req.body;
+
+        project.name = name || project.name;
+        project.description = description || project.description;
+        project.deadline = deadline !== undefined ? deadline : project.deadline;
+        project.status = status || project.status;
+        project.team = team !== undefined ? team : project.team;
+
+        const updatedProject = await project.save();
+        res.json(updatedProject);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /**
@@ -46,8 +96,21 @@ const updateProject = async (req, res) => {
  * @access  Private
  */
 const deleteProject = async (req, res) => {
-    // Implement delete project logic here
-    res.status(200).json({ message: 'Delete project endpoint' });
+    try {
+        const project = await Project.findById(req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        // Cascade: delete all tasks belonging to this project
+        await Task.deleteMany({ project: req.params.id });
+
+        await Project.deleteOne({ _id: req.params.id });
+        res.json({ message: 'Project and associated tasks removed' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 module.exports = {

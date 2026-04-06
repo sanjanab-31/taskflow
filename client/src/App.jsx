@@ -4,6 +4,7 @@ import Sidenav from './components/Sidenav';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
 import Team from './pages/Team';
 import UserProfile from './pages/UserProfile';
 import Signup from './pages/Signup';
@@ -22,6 +23,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+          <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
           <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/signup" element={<Signup />} />

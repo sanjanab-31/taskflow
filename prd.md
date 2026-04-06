@@ -1,21 +1,21 @@
 # 📌 Product Requirements Document (PRD)
-## 🧩 Product Name: TaskFlow
+## 🧩 Product Name: TaskFlow  
 ### A Premium Project & Team Management Experience (MERN Stack)
 
 ---
 
 ## 1. 🌟 Product Vision
-TaskFlow is designed as a **premium, modern, and intuitive project management platform** that combines powerful functionality with a refined user experience.
+TaskFlow is a **premium, modern, and intuitive project management platform** designed to combine powerful functionality with an elegant user experience.
 
-The goal is not just to manage tasks — but to deliver a **frictionless workflow system** where teams can plan, collaborate, and execute with clarity and efficiency.
+The goal is not just to manage tasks — but to deliver a **frictionless workflow system** where teams can plan, collaborate, and execute efficiently with complete clarity.
 
 ---
 
 ## 2. 🎯 Objectives
 - Deliver a **seamless and distraction-free user experience**
-- Enable **structured project execution**
-- Provide **real-time visibility into progress**
-- Ensure **secure and reliable authentication**
+- Enable **structured and efficient project execution**
+- Provide **real-time visibility into team progress**
+- Ensure **secure authentication and access control**
 - Build a **scalable, production-ready MERN architecture**
 
 ---
@@ -30,9 +30,9 @@ The goal is not just to manage tasks — but to deliver a **frictionless workflo
 
 ## 4. 💎 Core Experience Principles (Premium UX)
 
-- **Minimal yet powerful UI** (inspired by Notion, Linear)
+- **Minimal yet powerful interface** (inspired by modern SaaS tools)
 - **Zero clutter navigation**
-- **Fast interactions (no lag)**
+- **Fast and responsive interactions**
 - **Clear visual hierarchy**
 - **Smooth transitions & micro-interactions**
 - **Consistent spacing, typography, and color system**
@@ -44,7 +44,8 @@ The goal is not just to manage tasks — but to deliver a **frictionless workflo
 ---
 
 ### 5.1 🔐 Authentication System
-A secure and user-friendly authentication flow.
+
+A secure and intuitive authentication flow.
 
 #### Features:
 - Signup with:
@@ -54,7 +55,7 @@ A secure and user-friendly authentication flow.
   - Confirm Password
 - Login with credential validation
 - Logout from sidebar
-- Session persistence using localStorage (MVP)
+- Session persistence (MVP: localStorage)
 
 #### Validation Rules:
 - Password must include:
@@ -62,42 +63,43 @@ A secure and user-friendly authentication flow.
   - At least 1 alphabet
   - At least 1 number
   - At least 1 special character
-- Confirm password must match
+- Confirm password must match password
 
 #### UX Enhancements:
 - Real-time validation feedback
 - Password strength indicator
 - Show/Hide password toggle
-- Inline error messaging
+- Inline error and success messaging
+- Disabled submit button until valid
 
 ---
 
 ### 5.2 📊 Dashboard (Control Center)
 
-A visually rich and informative overview.
+A centralized overview of all activities.
 
 #### Features:
-- Total Projects
-- Tasks Completed vs Pending
-- Recent Activities
-- Quick Actions (Create Project / Task)
+- Total projects count
+- Tasks completed vs pending
+- Recent activities feed
+- Quick actions (Create Project / Task)
 
 #### UI:
 - Card-based layout
-- Subtle shadows and spacing
+- Subtle shadows and elevation
 - Clean typography
-- Data visualization (charts)
+- Optional charts/visual indicators
 
 ---
 
 ### 5.3 📁 Project Management
 
-Centralized project organization.
+Central hub for managing all projects.
 
 #### Features:
-- Create / Edit / Delete Projects
-- Assign team members
-- Project overview page
+- Create, edit, and delete projects
+- Assign team members to projects
+- View project details
 
 #### Fields:
 - Name
@@ -107,75 +109,76 @@ Centralized project organization.
 
 #### UX:
 - Grid/List view toggle
-- Hover interactions
-- Smooth transitions
+- Hover interactions and animations
+- Smooth transitions between states
 
 ---
 
-### 5.4 ✅ Task Management (Core Engine)
+### 5.4 ✅ Task Management (Core Module)
 
-The most critical module.
+The primary engine of the application.
 
 #### Features:
 - Create tasks within projects
 - Assign tasks to users
-- Update status:
+- Update task status:
   - To Do
   - In Progress
   - Done
-- Priority levels:
+- Set priority:
   - Low / Medium / High
-- Deadlines
+- Add deadlines
 
 #### Advanced UX:
-- Kanban Board (drag & drop)
-- Status color coding
-- Inline editing
-- Task detail modal
+- Kanban board with drag-and-drop
+- Status-based color coding
+- Inline editing for quick updates
+- Task detail modal view
 
 ---
 
 ### 5.5 👥 Team Management
 
-Collaborative user management.
+Manage users and collaboration.
 
 #### Features:
 - View all team members
 - Assign users to projects
-- Role display:
+- Display user roles:
   - Admin
   - Member
 
 #### UX:
 - Avatar-based user display
-- Clean list/grid layout
+- Clean list or grid layout
+- Role badges
 
 ---
 
 ### 5.6 👤 User Profile
 
-Personal user space.
+Personal account management.
 
 #### Features:
 - View user details
-- Edit profile (future)
 - Role display
+- (Future) Edit profile functionality
 
 ---
 
-### 5.7 🔔 Notifications (Future Ready)
+### 5.7 🔔 Notifications (Future Scope)
 
 - Task assignment alerts
 - Deadline reminders
-- Status updates
+- Status change notifications
 
 ---
 
-### 5.8 💬 Activity & Comments (Future)
+### 5.8 💬 Activity & Comments (Future Scope)
 
 - Comment on tasks
 - Activity timeline
-- Audit trail
+- Audit trail for actions
 
 ---
 
@@ -192,6 +195,8 @@ Personal user space.
 - `/team`
 - `/profile`
 
+> Note: All main routes use a shared layout (Sidebar + Content Area)
+
 ---
 
 ## 7. 🏗️ System Architecture
@@ -203,7 +208,7 @@ Personal user space.
 
 ### Backend (Planned):
 - Node.js + Express
-- MongoDB
+- MongoDB (Mongoose ODM)
 
 ---
 
@@ -213,7 +218,7 @@ Personal user space.
 - id
 - name
 - email
-- password
+- password (hashed in production)
 - role
 
 ### Projects:
@@ -222,7 +227,7 @@ Personal user space.
 - description
 - deadline
 - status
-- members[]
+- members[] (user references)
 
 ### Tasks:
 - id
@@ -231,27 +236,28 @@ Personal user space.
 - status
 - priority
 - deadline
-- assignedTo
-- projectId
+- assignedTo (user reference)
+- projectId (project reference)
 
 ---
 
 ## 9. 🎨 UI/UX Design System
 
 ### Visual Style:
-- Dark sidebar + light content area
-- Neutral color palette with accent highlights
-- Soft shadows and rounded components
+- Dark sidebar + light main container
+- Neutral palette with subtle accent colors
+- Soft shadows and rounded corners
 
 ### Typography:
-- Clean sans-serif (Inter / similar)
-- Strong hierarchy (headings vs body)
+- Clean sans-serif font (e.g., Inter)
+- Clear hierarchy for headings and body text
 
 ### Components:
 - Cards
 - Modals
-- Buttons (primary / secondary)
-- Inputs with validation states
+- Buttons (Primary / Secondary / Ghost)
+- Form inputs with validation states
+- Loaders and skeleton states
 
 ---
 
@@ -260,41 +266,42 @@ Personal user space.
 ### MVP:
 - LocalStorage-based authentication
 
-### Future:
-- JWT authentication
-- Password hashing (bcrypt)
+### Production (Future):
+- JWT-based authentication
+- Password hashing using bcrypt
 - Protected routes
-- Role-based access control
+- Role-based access control (RBAC)
 
 ---
 
 ## 11. ⚙️ Functional Requirements
 
-- User authentication must be validated
-- Only registered users can log in
-- Projects must support CRUD operations
+- Users must be able to sign up and log in
+- Only valid credentials allow access
+- Projects must support full CRUD operations
 - Tasks must be assignable and trackable
-- Navigation via sidebar must be persistent
-- Logout must clear session and redirect
+- Sidebar navigation must persist across pages
+- Logout must clear session and redirect to login
 
 ---
 
 ## 12. 🚫 Non-Functional Requirements
 
 - High performance (fast load times)
-- Fully responsive design
-- Scalable architecture
-- Maintainable codebase
-- Smooth UI interactions
+- Fully responsive across devices
+- Scalable and modular architecture
+- Clean and maintainable codebase
+- Smooth UI transitions and interactions
 
 ---
 
 ## 13. 🧪 Testing Strategy
 
 - Form validation testing
-- Authentication edge cases
+- Authentication edge case handling
 - Route protection testing
 - UI responsiveness testing
+- Error handling validation
 
 ---
 
@@ -309,18 +316,18 @@ Personal user space.
 ## 15. 🚀 Future Enhancements
 
 - Real-time collaboration (Socket.io)
-- AI-powered task suggestions
-- Calendar integration
+- AI-based task recommendations
+- Calendar and timeline views
 - Time tracking system
-- File attachments
+- File attachments and document sharing
 - Advanced analytics dashboard
 
 ---
 
 ## 16. 🏁 Conclusion
 
-TaskFlow is envisioned as a **premium productivity platform** that balances powerful functionality with an elegant user experience.
+TaskFlow is envisioned as a **premium productivity platform** that combines powerful task management capabilities with a refined user experience.
 
-By starting with a strong frontend and evolving into a full-stack solution, it has the potential to scale into a **professional-grade collaboration tool**.
+With a strong foundation and scalable architecture, it has the potential to evolve into a **professional-grade collaboration and workflow management system**.
 
 ---

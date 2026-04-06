@@ -15,9 +15,8 @@ const taskSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    content: {
+    description: {
         type: String,
-        required: true,
     },
     status: {
         type: String,
@@ -28,6 +27,13 @@ const taskSchema = mongoose.Schema({
         type: String,
         required: true,
         default: 'Medium', // Options: 'Low', 'Medium', 'High'
+    },
+    deadline: {
+        type: Date,
+    },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
 }, {
     timestamps: true,

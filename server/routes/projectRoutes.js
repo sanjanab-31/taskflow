@@ -6,11 +6,11 @@ const {
     updateProject,
     deleteProject,
 } = require('../controllers/projectController');
-// const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// router.use(protect); // TODO: Protect all project routes
+router.use(protect); // Protect all project routes
 
 router.route('/')
     .get(getProjects)

@@ -19,6 +19,9 @@ const projectSchema = mongoose.Schema({
         required: true,
         default: 'Not Started', // Options: 'Not Started', 'In Progress', 'Completed'
     },
+    deadline: {
+        type: Date,
+    },
     team: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

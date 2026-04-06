@@ -6,11 +6,11 @@ const {
     updateTask,
     deleteTask,
 } = require('../controllers/taskController');
-// const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// router.use(protect); // TODO: Protect all task routes
+router.use(protect); // Protect all task routes
 
 router.route('/')
     .get(getTasks)

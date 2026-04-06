@@ -8,10 +8,17 @@ const Task = require('../models/Task');
  */
 const getProjects = async (req, res) => {
     try {
-        const projects = await Project.find({}).populate('team', 'name email isAdmin').sort({ createdAt: -1 });
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const projects = await Project.find({ members: req.user._id })
+            .populate('members', 'name email role')
+            .sort({ createdAt: -1 });
+
         res.json(projects);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -22,43 +29,33 @@ const getProjects = async (req, res) => {
  */
 const createProject = async (req, res) => {
     try {
-        const { name, description, deadline, status, team } = req.body;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        const { name, description, deadline, status, members } = req.body;
 
         if (!name || !description) {
             return res.status(400).json({ message: 'Name and description are required' });
         }
 
+        // Ensure the creator is always a project member.
+        const memberIds = Array.isArray(members) ? members : [];
+        if (!memberIds.includes(String(req.user._id))) {
+            memberIds.push(req.user._id);
+        }
+
         const project = await Project.create({
-            user: req.user?._id || null,
             name,
             description,
             deadline: deadline || null,
-            status: status || 'Not Started',
-            team: team || [],
+            status: status || 'active',
+            members: memberIds,
         });
 
         res.status(201).json(project);
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * @desc    Get single project by ID
- * @route   GET /api/projects/:id
- * @access  Private
- */
-const getProjectById = async (req, res) => {
-    try {
-        const project = await Project.findById(req.params.id).populate('team', 'name email isAdmin');
-
-        if (project) {
-            res.json(project);
-        } else {
-            res.status(404).json({ message: 'Project not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -69,24 +66,36 @@ const getProjectById = async (req, res) => {
  */
 const updateProject = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const project = await Project.findById(req.params.id);
 
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
 
-        const { name, description, deadline, status, team } = req.body;
+        const isMember = project.members.some(
+            (memberId) => String(memberId) === String(req.user._id)
+        );
+
+        if (!isMember) {
+            return res.status(403).json({ message: 'Forbidden: project access denied' });
+        }
+
+        const { name, description, deadline, status, members } = req.body;
 
         project.name = name || project.name;
         project.description = description || project.description;
         project.deadline = deadline !== undefined ? deadline : project.deadline;
         project.status = status || project.status;
-        project.team = team !== undefined ? team : project.team;
+        project.members = members !== undefined ? members : project.members;
 
         const updatedProject = await project.save();
         res.json(updatedProject);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
@@ -97,10 +106,22 @@ const updateProject = async (req, res) => {
  */
 const deleteProject = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const project = await Project.findById(req.params.id);
 
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
+        }
+
+        const isMember = project.members.some(
+            (memberId) => String(memberId) === String(req.user._id)
+        );
+
+        if (!isMember) {
+            return res.status(403).json({ message: 'Forbidden: project access denied' });
         }
 
         // Cascade: delete all tasks belonging to this project
@@ -109,14 +130,13 @@ const deleteProject = async (req, res) => {
         await Project.deleteOne({ _id: req.params.id });
         res.json({ message: 'Project and associated tasks removed' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
 module.exports = {
     getProjects,
     createProject,
-    getProjectById,
     updateProject,
     deleteProject,
 };

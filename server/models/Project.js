@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 const projectSchema = mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'User',
-    },
     name: {
         type: String,
         required: true,
@@ -16,13 +11,12 @@ const projectSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        required: true,
-        default: 'Not Started', // Options: 'Not Started', 'In Progress', 'Completed'
+        default: 'active',
     },
     deadline: {
         type: Date,
     },
-    team: [{
+    members: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     }],

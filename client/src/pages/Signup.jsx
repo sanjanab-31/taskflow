@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { registerUser } from '../api/authApi';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [apiError, setApiError] = useState('');
   const [strength, setStrength] = useState({ score: 0, label: 'Weak', color: 'bg-gray-200' });
 
   // Real-time validation
@@ -84,22 +86,25 @@ export default function Signup() {
     e.preventDefault();
     if (!isFormValid()) return;
 
+    setApiError('');
     setIsSubmitting(true);
-    
-    // Simulate API delay
-    setTimeout(() => {
-      localStorage.setItem('taskflow_user', JSON.stringify({
-        fullName: formData.fullName,
+
+    try {
+      await registerUser({
+        name: formData.fullName,
         email: formData.email,
-        password: formData.password
-      }));
-      
+        password: formData.password,
+      });
+
       setIsSubmitting(false);
       setSuccess(true);
-      
+
       // Redirect after showing success message
       setTimeout(() => navigate('/login'), 1500);
-    }, 1200);
+    } catch (error) {
+      setApiError(error?.response?.data?.message || 'Signup failed. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -116,6 +121,12 @@ export default function Signup() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             Account created successfully! Redirecting...
+          </div>
+        )}
+
+        {apiError && (
+          <div className="mb-6 p-4 bg-red-50 text-red-600 text-xs rounded-xl border border-red-200">
+            {apiError}
           </div>
         )}
 

@@ -1,25 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import ProjectModal from '../components/ProjectModal';
+import { getProjects, deleteProject as deleteProjectApi } from '../api/projectApi';
 
 const statusBadge = {
   'Not Started': 'bg-gray-100 text-gray-600',
   'In Progress': 'bg-blue-50 text-blue-600',
-  'Completed': 'bg-green-50 text-green-600'
+  'Completed': 'bg-green-50 text-green-600',
+  active: 'bg-emerald-50 text-emerald-700',
+  done: 'bg-green-50 text-green-600',
+  'in-progress': 'bg-blue-50 text-blue-600',
+  todo: 'bg-gray-100 text-gray-600',
 };
 
 export default function Projects() {
   const navigate = useNavigate();
-  const { projects, tasks, deleteProject } = useAppContext();
+  const { tasks } = useAppContext();
   const [view, setView] = useState('grid');
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        setIsLoading(true);
+        setFetchError('');
+        const data = await getProjects();
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setFetchError(error?.response?.data?.message || 'Failed to load projects.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
   const openCreate = () => { setEditingProject(null); setIsModalOpen(true); };
   const openEdit = (e, project) => { e.stopPropagation(); setEditingProject(project); setIsModalOpen(true); };
   const handleDelete = (e, id) => { e.stopPropagation(); setConfirmDelete(id); };
+  const confirmDeleteProject = async () => {
+    try {
+      await deleteProjectApi(confirmDelete);
+      setProjects((prev) => prev.filter((project) => (project._id || project.id) !== confirmDelete));
+    } catch (error) {
+      setFetchError(error?.response?.data?.message || 'Failed to delete project.');
+    } finally {
+      setConfirmDelete(null);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -45,7 +80,15 @@ export default function Projects() {
         </div>
       </header>
 
-      {projects.length === 0 ? (
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-24 text-gray-400">
+          <p className="text-lg font-semibold text-gray-500">Loading projects...</p>
+        </div>
+      ) : fetchError ? (
+        <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-200">
+          {fetchError}
+        </div>
+      ) : projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-gray-400">
           <svg className="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>
           <p className="text-lg font-semibold text-gray-500">No projects yet</p>
@@ -57,12 +100,13 @@ export default function Projects() {
       ) : view === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {projects.map(project => {
-            const projectTasks = tasks.filter(t => t.projectId === project.id);
+            const projectId = project._id || project.id;
+            const projectTasks = tasks.filter(t => t.projectId === projectId);
             const done = projectTasks.filter(t => t.status === 'Done').length;
             const total = projectTasks.length;
             const progress = total > 0 ? Math.round((done / total) * 100) : 0;
             return (
-              <div key={project.id} onClick={() => navigate(`/projects/${project.id}`)}
+              <div key={projectId} onClick={() => navigate(`/projects/${projectId}`)}
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-6 cursor-pointer group">
                 <div className="flex items-start justify-between mb-3">
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${statusBadge[project.status] || 'bg-gray-100 text-gray-600'}`}>{project.status}</span>
@@ -70,7 +114,7 @@ export default function Projects() {
                     <button onClick={(e) => openEdit(e, project)} className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center">
                       <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                     </button>
-                    <button onClick={(e) => handleDelete(e, project.id)} className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center">
+                    <button onClick={(e) => handleDelete(e, projectId)} className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center">
                       <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   </div>
@@ -94,8 +138,10 @@ export default function Projects() {
                     <span className="text-xs text-gray-400 font-medium">📅 {new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   )}
                   <div className="flex -space-x-2">
-                    {project.members?.slice(0, 3).map(m => (
-                      <img key={m.id} src={m.avatar} alt={m.name} title={m.name} className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+                    {project.members?.slice(0, 3).map((m) => (
+                      <span key={m._id || m.id} title={m.name} className="w-7 h-7 rounded-full border-2 border-white shadow-sm bg-gray-200 text-[10px] font-bold text-gray-600 flex items-center justify-center">
+                        {(m.name || '?').slice(0, 1).toUpperCase()}
+                      </span>
                     ))}
                     {project.members?.length > 3 && <span className="w-7 h-7 rounded-full bg-gray-200 text-xs font-bold flex items-center justify-center text-gray-500 border-2 border-white">+{project.members.length - 3}</span>}
                   </div>
@@ -108,11 +154,12 @@ export default function Projects() {
         /* List View */
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {projects.map((project, idx) => {
-            const projectTasks = tasks.filter(t => t.projectId === project.id);
+            const projectId = project._id || project.id;
+            const projectTasks = tasks.filter(t => t.projectId === projectId);
             const done = projectTasks.filter(t => t.status === 'Done').length;
             const total = projectTasks.length;
             return (
-              <div key={project.id} onClick={() => navigate(`/projects/${project.id}`)}
+              <div key={projectId} onClick={() => navigate(`/projects/${projectId}`)}
                 className={`flex items-center gap-6 p-5 cursor-pointer hover:bg-gray-50 transition-colors ${idx !== 0 ? 'border-t border-gray-100' : ''}`}>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 truncate hover:text-indigo-600 transition-colors">{project.name}</h3>
@@ -121,15 +168,17 @@ export default function Projects() {
                 <span className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold ${statusBadge[project.status] || 'bg-gray-100 text-gray-600'}`}>{project.status}</span>
                 <span className="text-xs text-gray-400 flex-shrink-0">{done}/{total} tasks</span>
                 <div className="flex -space-x-2 flex-shrink-0">
-                  {project.members?.slice(0, 3).map(m => (
-                    <img key={m.id} src={m.avatar} alt={m.name} className="w-6 h-6 rounded-full border-2 border-white" />
+                  {project.members?.slice(0, 3).map((m) => (
+                    <span key={m._id || m.id} title={m.name} className="w-6 h-6 rounded-full border-2 border-white bg-gray-200 text-[10px] font-bold text-gray-600 flex items-center justify-center">
+                      {(m.name || '?').slice(0, 1).toUpperCase()}
+                    </span>
                   ))}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <button onClick={(e) => openEdit(e, project)} className="w-7 h-7 rounded-lg hover:bg-gray-200 flex items-center justify-center">
                     <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                   </button>
-                  <button onClick={(e) => handleDelete(e, project.id)} className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center">
+                  <button onClick={(e) => handleDelete(e, projectId)} className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center">
                     <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
@@ -148,7 +197,7 @@ export default function Projects() {
             <p className="text-sm text-gray-500 mb-6">This will permanently delete this project and all its tasks. This action cannot be undone.</p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-50 rounded-xl transition-all">Cancel</button>
-              <button onClick={() => { deleteProject(confirmDelete); setConfirmDelete(null); }} className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-all">Delete</button>
+              <button onClick={confirmDeleteProject} className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-all">Delete</button>
             </div>
           </div>
         </div>

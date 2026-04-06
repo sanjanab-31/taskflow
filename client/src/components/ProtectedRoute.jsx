@@ -2,7 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
-  const isLoggedIn = localStorage.getItem('taskflow_isLoggedIn') === 'true';
+  const token = localStorage.getItem('token');
+  const isLoggedIn = Boolean(token);
 
   if (!isLoggedIn) {
     // Redirect unauthorized users to /login

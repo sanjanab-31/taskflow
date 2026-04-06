@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { loginUser } from '../api/authApi';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,34 +17,37 @@ export default function Login() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      const storedUser = localStorage.getItem('taskflow_user');
-      
-      if (!storedUser) {
-        setError('No account found with this email. Please sign up.');
+    try {
+      const data = await loginUser(formData);
+
+      if (!data?.token) {
+        setError('Login failed. Please try again.');
         setIsSubmitting(false);
         return;
       }
 
-      const { email, password } = JSON.parse(storedUser);
-
-      if (formData.email !== email || formData.password !== password) {
-        setError('Invalid email or password.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Login successful
+      localStorage.setItem('token', data.token);
       localStorage.setItem('taskflow_isLoggedIn', 'true');
+
+      if (data._id) {
+        localStorage.setItem('userId', data._id);
+      }
+
+      if (data.name) {
+        localStorage.setItem('userName', data.name);
+      }
+
       setIsSubmitting(false);
       navigate('/');
-    }, 1000);
+    } catch (apiError) {
+      setError(apiError?.response?.data?.message || 'Invalid email or password.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
